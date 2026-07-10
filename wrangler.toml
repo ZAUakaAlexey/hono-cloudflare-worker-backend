@@ -3,14 +3,14 @@ main = "src/index.ts"
 compatibility_date = "2024-12-01"
 
 [vars]
-ENVIRONMENT = "development"
+ENVIRONMENT = "production"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "hono-db"
-database_id = "local"
+database_id = "169a55a1-d89e-4ca4-b56a-21dd80148a4b"
 migrations_dir = "drizzle"
 
 [[kv_namespaces]]
 binding = "KV"
-id = "local"
+id = "bc9f8bbeba1f4a77b256e2aa323f1386"
