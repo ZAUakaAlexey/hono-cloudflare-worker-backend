@@ -28,6 +28,17 @@ export function createApp() {
     },
   });
 
+  app.use("*", (c, next) => {
+    if (c.env.ENVIRONMENT === "production") {
+      const proto = c.req.header("x-forwarded-proto");
+      if (proto === "http") {
+        const url = new URL(c.req.url);
+        url.protocol = "https:";
+        return c.redirect(url.toString(), 301);
+      }
+    }
+    return next();
+  });
   app.use("*", logger());
   app.use("*", async (c, next) => {
     await next();
