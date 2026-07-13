@@ -46,6 +46,21 @@ All new code must pass these checks:
 - `HTTPException` caught and returned as 400 with generic message
 - `ZodError` caught and returned as `VALIDATION_ERROR` with generic message
 
+### WAF (Web Application Firewall)
+- WAF middleware runs before all other middleware
+- Blocks SQL injection patterns in query params and POST/PUT/PATCH body
+- Blocks XSS patterns in query params (script tags, javascript:, event handlers, eval, document.cookie)
+- Blocks path traversal (encoded ../, ..\)
+- Blocks known scanner user-agents (sqlmap, Nikto, Nessus, w3af, Havij)
+- Returns `{"error":{"code":"FORBIDDEN","message":"Request blocked"}}` with 403
+- Must not block legitimate input (names with apostrophes, normal queries)
+
+### Structured Logging
+- Every request gets a unique `X-Request-Id` header (16-char hex)
+- Logs are JSON structured: requestId, method, path, status, duration, ip, userId, userAgent, cfRay, timestamp
+- Log levels: info (<400), warn (4xx), error (5xx)
+- Use `requestId` for tracing issues across logs
+
 ### Rate Limiting
 - Auth endpoints: 5 req/min
 - API endpoints: 60 req/min
