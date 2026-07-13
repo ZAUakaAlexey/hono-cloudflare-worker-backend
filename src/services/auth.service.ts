@@ -5,17 +5,19 @@ import { users, userRoles } from "../db/schema";
 import { createSession, invalidateSession } from "../lib/session";
 import { ConflictError, UnauthorizedError } from "../utils/errors";
 import { hashPassword, verifyPassword } from "../utils/password";
-import { stripHtmlTags } from "../utils/sanitize";
+import { stripHtmlTags, normalizeEmail } from "../utils/sanitize";
 import type { RegisterInput, LoginInput } from "../validators/auth.schema";
 
 
 const DEFAULT_ROLE_ID = "role_viewer";
 
 export async function register(db: Database, input: RegisterInput) {
+  const email = normalizeEmail(input.email);
+
   const existing = await db
     .select({ id: users.id })
     .from(users)
-    .where(eq(users.email, input.email))
+    .where(eq(users.email, email))
     .get();
 
   if (existing) {
@@ -28,7 +30,7 @@ export async function register(db: Database, input: RegisterInput) {
 
   await db.insert(users).values({
     id: userId,
-    email: input.email,
+    email,
     passwordHash,
     name: stripHtmlTags(input.name),
     isActive: true,
@@ -45,10 +47,12 @@ export async function register(db: Database, input: RegisterInput) {
 }
 
 export async function login(db: Database, input: LoginInput) {
+  const email = normalizeEmail(input.email);
+
   const user = await db
     .select()
     .from(users)
-    .where(eq(users.email, input.email))
+    .where(eq(users.email, email))
     .get();
 
   if (!user || !user.isActive) {

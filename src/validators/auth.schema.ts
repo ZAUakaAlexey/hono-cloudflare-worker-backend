@@ -2,7 +2,7 @@ import { z } from "@hono/zod-openapi";
 
 export const RegisterSchema = z
   .object({
-    email: z.string().email().openapi({ example: "user@example.com" }),
+    email: z.string().email().max(254).openapi({ example: "user@example.com" }),
     password: z.string().min(8).max(128).openapi({ example: "securepass123" }),
     name: z.string().min(1).max(100).openapi({ example: "John Doe" }),
   })
