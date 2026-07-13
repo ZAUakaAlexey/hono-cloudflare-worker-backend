@@ -147,8 +147,10 @@ usersApp.use("/users", requireAuth);
 usersApp.openapi(listRoute, async (c) => {
   await checkPermission(c, "users:read");
   const { page = "1", limit = "20" } = c.req.valid("query");
+  const parsedPage = Math.max(1, parseInt(page) || 1);
+  const parsedLimit = Math.min(100, Math.max(1, parseInt(limit) || 20));
   const db = createDb(c.env.DB);
-  const result = await userService.listUsers(db, parseInt(page), parseInt(limit));
+  const result = await userService.listUsers(db, parsedPage, parsedLimit);
   return c.json(result);
 });
 

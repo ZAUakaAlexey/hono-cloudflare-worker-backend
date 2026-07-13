@@ -9,9 +9,10 @@ interface RateLimitOptions {
 export function rateLimit({ limit, windowSeconds }: RateLimitOptions) {
   return createMiddleware<Env>(async (c, next) => {
     const kv = c.env.KV;
-    const ip = c.req.header("cf-connecting-ip") ?? c.req.header("x-forwarded-for") ?? "unknown";
-    const path = new URL(c.req.url).pathname;
-    const key = `rate:${ip}:${path}`;
+    const ip = c.req.header("cf-connecting-ip") ?? "unknown";
+    const rawPath = new URL(c.req.url).pathname;
+    const normalizedPath = decodeURIComponent(rawPath).replace(/\/+/g, "/").replace(/\/\.\//g, "/").replace(/\/+$/, "");
+    const key = `rate:${ip}:${normalizedPath}`;
 
     const now = Math.floor(Date.now() / 1000);
     const windowStart = now - windowSeconds;
