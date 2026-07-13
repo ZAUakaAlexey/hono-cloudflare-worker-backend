@@ -16,7 +16,7 @@ Every new route must follow this structure:
 3. Call `checkPermission(c, "resource:action")` as first line in handler for RBAC-protected routes
 4. Use service layer for business logic — no DB queries in route handlers
 
-## Security Requirements (enforced by 131 tests)
+## Security Requirements (enforced by 164 tests)
 
 All new code must pass these checks:
 
@@ -106,7 +106,7 @@ All new code must pass these checks:
 
 - Push to `main` -> GitHub Actions: test -> migrate -> deploy
 - Push to PR -> GitHub Actions: test only
-- All 131+ tests must pass before deploy
+- All 164+ tests must pass before deploy
 
 ## Adding a New Resource (checklist)
 
