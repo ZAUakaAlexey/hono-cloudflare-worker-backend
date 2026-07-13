@@ -14,5 +14,6 @@ export interface Env {
   Variables: {
     user: SessionUser | null;
     sessionToken: string | null;
+    requestId: string;
   };
 }

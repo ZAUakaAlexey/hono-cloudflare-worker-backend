@@ -1,12 +1,13 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { swaggerUI } from "@hono/swagger-ui";
 import { cors } from "hono/cors";
-import { logger } from "hono/logger";
 import type { Env } from "./types/env";
 import { errorHandler } from "./middleware/error-handler";
 import { authMiddleware } from "./middleware/auth";
 import { securityHeaders } from "./middleware/security-headers";
 import { rateLimit } from "./middleware/rate-limit";
+import { waf } from "./middleware/waf";
+import { requestLogger } from "./middleware/request-logger";
 import { health } from "./routes/health.routes";
 import { auth } from "./routes/auth.routes";
 import { usersApp } from "./routes/users.routes";
@@ -40,7 +41,8 @@ export function createApp() {
     }
     return next();
   });
-  app.use("*", logger());
+  app.use("*", waf);
+  app.use("*", requestLogger);
   app.use("*", async (c, next) => {
     await next();
     if (c.res.status === 400) {
