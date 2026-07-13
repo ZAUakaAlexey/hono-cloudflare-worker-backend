@@ -19,7 +19,7 @@ export async function register(db: Database, input: RegisterInput) {
     .get();
 
   if (existing) {
-    throw new ConflictError("Email already registered");
+    throw new ConflictError("Registration failed");
   }
 
   const now = new Date().toISOString();

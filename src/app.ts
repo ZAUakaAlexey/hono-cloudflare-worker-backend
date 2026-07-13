@@ -12,16 +12,32 @@ import { auth } from "./routes/auth.routes";
 import { usersApp } from "./routes/users.routes";
 import { rolesApp } from "./routes/roles.routes";
 
+const FORBIDDEN_IN_PROD = {
+  error: { code: "FORBIDDEN", message: "Not available in production" },
+} as const;
+
 export function createApp() {
-  const app = new OpenAPIHono<Env>();
+  const app = new OpenAPIHono<Env>({
+    defaultHook: (result, c) => {
+      if (!result.success) {
+        return c.json(
+          { error: { code: "VALIDATION_ERROR", message: "Invalid request body" } },
+          400,
+        );
+      }
+    },
+  });
 
   app.use("*", logger());
   app.use("*", securityHeaders);
   app.use("*", (c, next) => {
     const corsMiddleware = cors({
       origin: c.env.ENVIRONMENT === "production"
-        ? ["https://yourdomain.com"]
-        : ["*"],
+        ? (origin) => {
+            const allowed = ["https://yourdomain.com"];
+            return allowed.includes(origin) ? origin : null;
+          }
+        : "*",
       credentials: true,
     });
     return corsMiddleware(c, next);
@@ -41,6 +57,13 @@ export function createApp() {
   app.route("/", usersApp);
   app.route("/", rolesApp);
 
+  app.use("/doc", (c, next) => {
+    if (c.env.ENVIRONMENT === "production") {
+      return c.json(FORBIDDEN_IN_PROD, 403);
+    }
+    return next();
+  });
+
   app.doc("/doc", {
     openapi: "3.0.0",
     info: {
@@ -52,10 +75,7 @@ export function createApp() {
 
   app.get("/docs", (c) => {
     if (c.env.ENVIRONMENT === "production") {
-      return c.json(
-        { error: { code: "FORBIDDEN", message: "Not available in production" } },
-        403,
-      );
+      return c.json(FORBIDDEN_IN_PROD, 403);
     }
     return swaggerUI({ url: "/doc" })(c);
   });
