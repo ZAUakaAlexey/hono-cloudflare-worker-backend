@@ -30,8 +30,9 @@ export function createApp() {
 
   app.use("*", (c, next) => {
     if (c.env.ENVIRONMENT === "production") {
-      const proto = c.req.header("x-forwarded-proto");
-      if (proto === "http") {
+      const visitor = c.req.header("cf-visitor");
+      const scheme = visitor ? JSON.parse(visitor).scheme : null;
+      if (scheme === "http") {
         const url = new URL(c.req.url);
         url.protocol = "https:";
         return c.redirect(url.toString(), 301);
