@@ -29,6 +29,21 @@ export function createApp() {
   });
 
   app.use("*", logger());
+  app.use("*", async (c, next) => {
+    await next();
+    if (c.res.status === 400) {
+      const cloned = c.res.clone();
+      try {
+        const body = await cloned.json();
+        if (body?.success === false && body?.error?.name === "ZodError") {
+          c.res = c.json(
+            { error: { code: "VALIDATION_ERROR", message: "Invalid request body" } },
+            400,
+          );
+        }
+      } catch {}
+    }
+  });
   app.use("*", securityHeaders);
   app.use("*", (c, next) => {
     const corsMiddleware = cors({

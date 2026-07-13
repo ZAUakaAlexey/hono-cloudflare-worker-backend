@@ -15,6 +15,18 @@ export const errorHandler: ErrorHandler<Env> = (err, c) => {
     );
   }
 
+  if (err.name === "ZodError" || err.constructor?.name === "ZodError") {
+    return c.json(
+      {
+        error: {
+          code: "VALIDATION_ERROR",
+          message: "Invalid request body",
+        },
+      },
+      400,
+    );
+  }
+
   console.error("Unhandled error:", err);
 
   return c.json(
