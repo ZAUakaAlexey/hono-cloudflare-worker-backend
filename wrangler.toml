@@ -14,3 +14,6 @@ migrations_dir = "drizzle"
 [[kv_namespaces]]
 binding = "KV"
 id = "bc9f8bbeba1f4a77b256e2aa323f1386"
+
+[triggers]
+crons = ["0 */6 * * *"]

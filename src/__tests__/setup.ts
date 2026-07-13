@@ -45,6 +45,8 @@ export async function applyMigrations(db: D1Database) {
     `CREATE TABLE IF NOT EXISTS user_roles (user_id text NOT NULL, role_id text NOT NULL, FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE cascade, FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE cascade)`,
     `CREATE TABLE IF NOT EXISTS users (id text PRIMARY KEY NOT NULL, email text NOT NULL, password_hash text NOT NULL, name text NOT NULL, is_active integer DEFAULT true NOT NULL, created_at text NOT NULL, updated_at text NOT NULL)`,
     `CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique ON users (email)`,
+    `CREATE TABLE IF NOT EXISTS audit_log (id text PRIMARY KEY NOT NULL, user_id text, action text NOT NULL, resource text NOT NULL, resource_id text, detail text, ip text, created_at text NOT NULL)`,
+    `CREATE TABLE IF NOT EXISTS login_attempts (id text PRIMARY KEY NOT NULL, email text NOT NULL, success integer NOT NULL, ip text, created_at text NOT NULL)`,
   ];
 
   for (const sql of statements) {

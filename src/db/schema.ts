@@ -52,6 +52,25 @@ export const rolePermissions = sqliteTable("role_permissions", {
     .references(() => permissions.id, { onDelete: "cascade" }),
 });
 
+export const auditLog = sqliteTable("audit_log", {
+  id: text("id").primaryKey(),
+  userId: text("user_id"),
+  action: text("action").notNull(),
+  resource: text("resource").notNull(),
+  resourceId: text("resource_id"),
+  detail: text("detail"),
+  ip: text("ip"),
+  createdAt: text("created_at").notNull(),
+});
+
+export const loginAttempts = sqliteTable("login_attempts", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull(),
+  success: integer("success", { mode: "boolean" }).notNull(),
+  ip: text("ip"),
+  createdAt: text("created_at").notNull(),
+});
+
 // Relations
 
 export const usersRelations = relations(users, ({ many }) => ({

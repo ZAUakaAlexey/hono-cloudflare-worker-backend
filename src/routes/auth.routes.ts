@@ -6,6 +6,7 @@ import { RegisterSchema, LoginSchema, UserResponseSchema } from "../validators/a
 import { ErrorResponseSchema, MessageResponseSchema } from "../validators/shared.schema";
 import * as authService from "../services/auth.service";
 import { requireAuth } from "../middleware/auth";
+import * as auditService from "../services/audit.service";
 
 const SESSION_COOKIE = "session";
 
@@ -94,7 +95,10 @@ const auth = new OpenAPIHono<Env>();
 auth.openapi(registerRoute, async (c) => {
   const input = c.req.valid("json");
   const db = createDb(c.env.DB);
+  const ip = c.req.header("cf-connecting-ip");
   const { token, expiresAt } = await authService.register(db, input);
+
+  await auditService.log(db, { action: "register", resource: "auth", ip });
 
   setSessionCookie(c, token, expiresAt);
 
@@ -104,7 +108,10 @@ auth.openapi(registerRoute, async (c) => {
 auth.openapi(loginRoute, async (c) => {
   const input = c.req.valid("json");
   const db = createDb(c.env.DB);
-  const { token, expiresAt } = await authService.login(db, input);
+  const ip = c.req.header("cf-connecting-ip");
+  const { token, expiresAt } = await authService.login(db, input, ip);
+
+  await auditService.log(db, { action: "login", resource: "auth", ip });
 
   setSessionCookie(c, token, expiresAt);
 
@@ -115,7 +122,9 @@ auth.openapi(logoutRoute, async (c) => {
   const token = c.get("sessionToken");
   if (token) {
     const db = createDb(c.env.DB);
+    const ip = c.req.header("cf-connecting-ip");
     await authService.logout(db, token);
+    await auditService.log(db, { userId: c.get("user")?.id, action: "logout", resource: "auth", ip });
     deleteCookie(c, SESSION_COOKIE, { path: "/" });
   }
   return c.json({ message: "Logged out successfully" });
